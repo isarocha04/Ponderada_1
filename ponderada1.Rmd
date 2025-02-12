@@ -27,7 +27,6 @@ str(InteliFalhas)
 -   O dataset apresenta várias colunas significativas, incluindo `DATA.DETECCAO`, `LOC`, `PONTO` e `TYPE_TEXT`, que serão importantes para nossa análise
 -   Algumas colunas podem precisar de padronização para evitarmos inconsistências na contagem dos valores.
 
-------------------------------------------------------------------------
 
 # 2. Processamento dos Dados
 
@@ -52,7 +51,7 @@ str(InteliFalhas)
 -   A conversão da coluna `DATA.DETECCAO` foi bem-sucedida, o que nos permite ver as análises temporais precisas.\
 -   Isso vai ajusar a evitar duplicações desnecessárias e melhorar a consistência dos dados.
 
-------------------------------------------------------------------------
+
 
 # 3. Análise Univariada
 
@@ -77,7 +76,7 @@ ggplot(dados_filtrados, aes(x=DATA.DETECCAO)) +
 -   Há períodos de picos e quedas, o que pode indicar variações no processo de produção ou falhas sazonais.\
 -   A maior parte das falhas acontece a partir de 2023, mostrando que o monitoramento pode ter começado ou sido aprimorado recentemente
 
-------------------------------------------------------------------------
+
 
 ## 3.2 Localizações (`LOC`) mais afetadas
 
@@ -102,7 +101,7 @@ ggplot(top_loc, aes(x=reorder(LOC, -Frequencia), y=Frequencia)) +
 -   A tampa traseira e portas são as localizações mais afetadas, indicando componentes críticos que podem precisar de manutenção frequentemente.\
 -   Algumas partes do veículo têm uma quantidade de falhas muito maior, mostrando alguns pontos que podem ser pontos frágeis do projeto.
 
-------------------------------------------------------------------------
+
 
 ## 3.3 Tipos de Falhas Mais Comuns (`TYPE_TEXT`)
 
@@ -126,7 +125,6 @@ ggplot(top_type, aes(x=reorder(TYPE_TEXT, -Frequencia), y=Frequencia)) +
 
 -   Esses tipos de falhas devem ser vistos mais de perto para análise e melhoria, pois representam a maioria dos eventos registrados.\
 
--   
 
     ## Desgaste prematuro e desalinhamento são os tipos de falhas mais comuns, mostrando um possível problema na qualidade do material ou na montagem.
 
@@ -142,7 +140,6 @@ ggplot(top_type, aes(x=reorder(TYPE_TEXT, -Frequencia), y=Frequencia)) +
 
 -   Vemos os tipos de falhas mais comuns, como o desgaste prematuro e desalinhamento.
 
-------------------------------------------------------------------------
 
 ## **4.2 Limitações e Possíveis Melhorias**
 
