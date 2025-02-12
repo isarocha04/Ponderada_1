@@ -1,0 +1,154 @@
+---
+title: "Análise Exploratória de Falhas"
+author: "Isabela"
+date: "2025-02-11"
+output: html_document
+---
+
+# 1. Carregamento de Dados
+
+## 1.1 Carregamento do Dataset
+
+```{r}
+# Carrega os dados
+InteliFalhas <- read.csv("Downloads/InteliFalhas.csv", header=TRUE, sep=",", stringsAsFactors=FALSE)
+
+# Mostra os dados que carregamos
+print(head(InteliFalhas, 10))
+```
+
+## 1.2 Verificação da Estrutura dos Dados
+
+```{r}
+# Estrutura do dataset
+str(InteliFalhas)
+```
+
+-   O dataset apresenta várias colunas significativas, incluindo `DATA.DETECCAO`, `LOC`, `PONTO` e `TYPE_TEXT`, que serão importantes para nossa análise
+-   Algumas colunas podem precisar de padronização para evitarmos inconsistências na contagem dos valores.
+
+------------------------------------------------------------------------
+
+# 2. Processamento dos Dados
+
+## 2.1 Ajuste de Formatos de Data e Texto
+
+```{r}
+library(lubridate)
+library(dplyr)
+
+# Converte DATA.DETECCAO para formato de data/hora
+InteliFalhas$DATA.DETECCAO <- ymd_hms(InteliFalhas$DATA.DETECCAO)
+
+# Remove espaços extras nas colunas textuais
+InteliFalhas$LOC <- trimws(InteliFalhas$LOC)
+InteliFalhas$PONTO <- trimws(InteliFalhas$PONTO)
+InteliFalhas$TYPE_TEXT <- trimws(InteliFalhas$TYPE_TEXT)
+
+# Verifica conversão
+str(InteliFalhas)
+```
+
+-   A conversão da coluna `DATA.DETECCAO` foi bem-sucedida, o que nos permite ver as análises temporais precisas.\
+-   Isso vai ajusar a evitar duplicações desnecessárias e melhorar a consistência dos dados.
+
+------------------------------------------------------------------------
+
+# 3. Análise Univariada
+
+## 3.1 Distribuição dos Eventos ao Longo do Tempo
+
+```{r}
+library(ggplot2)
+
+# Filtrar para só anos ativos, que tem informações 
+dados_filtrados <- InteliFalhas %>%
+  filter(year(DATA.DETECCAO) >= 2023)
+
+# Cria novo gráfico sem anos vazios
+ggplot(dados_filtrados, aes(x=DATA.DETECCAO)) +
+  geom_histogram(binwidth=86400, fill="blue", color="black") +
+  labs(title="Distribuição de Detecção ao Longo do Tempo (Tirando anos inativos)",
+       x="Data de Detecção",
+       y="Frequência") +
+  theme_minimal()
+```
+
+-   Há períodos de picos e quedas, o que pode indicar variações no processo de produção ou falhas sazonais.\
+-   A maior parte das falhas acontece a partir de 2023, mostrando que o monitoramento pode ter começado ou sido aprimorado recentemente
+
+------------------------------------------------------------------------
+
+## 3.2 Localizações (`LOC`) mais afetadas
+
+```{r}
+loc_contagem <- InteliFalhas %>%
+  group_by(LOC) %>%
+  summarise(Frequencia = n()) %>%
+  arrange(desc(Frequencia))
+
+# Seleciona os 10 locais mais frequentes
+top_loc <- loc_contagem %>% slice_max(Frequencia, n=10)
+
+ggplot(top_loc, aes(x=reorder(LOC, -Frequencia), y=Frequencia)) +
+  geom_bar(stat="identity", fill="purple", color="black") +
+  labs(title="Top 10 Localizações Mais Afetadas",
+       x="Localização",
+       y="Frequência") +
+  theme_minimal() +
+  coord_flip()
+```
+
+-   A tampa traseira e portas são as localizações mais afetadas, indicando componentes críticos que podem precisar de manutenção frequentemente.\
+-   Algumas partes do veículo têm uma quantidade de falhas muito maior, mostrando alguns pontos que podem ser pontos frágeis do projeto.
+
+------------------------------------------------------------------------
+
+## 3.3 Tipos de Falhas Mais Comuns (`TYPE_TEXT`)
+
+```{r}
+type_contagem <- InteliFalhas %>%
+  group_by(TYPE_TEXT) %>%
+  summarise(Frequencia = n()) %>%
+  arrange(desc(Frequencia))
+
+# Seleciona os 10 tipos de falhas mais comuns
+top_type <- type_contagem %>% slice_max(Frequencia, n=10)
+
+ggplot(top_type, aes(x=reorder(TYPE_TEXT, -Frequencia), y=Frequencia)) +
+  geom_bar(stat="identity", fill="red", color="black") +
+  labs(title="Top 10 Tipos de Falhas Mais Comuns",
+       x="Tipo de Falha",
+       y="Frequência") +
+  theme_minimal() +
+  coord_flip()
+```
+
+-   Esses tipos de falhas devem ser vistos mais de perto para análise e melhoria, pois representam a maioria dos eventos registrados.\
+
+-   
+
+    ## Desgaste prematuro e desalinhamento são os tipos de falhas mais comuns, mostrando um possível problema na qualidade do material ou na montagem.
+
+# 4. Conclusão e Discussão
+
+## **4.1 Sumário das Descobertas**
+
+-   Certas falhas aparecem com maior frequência em períodos específicos, mostrando que há fatores externos ou operacionais influenciando os problemas registrados.
+
+-   Conseguimos identificar uma concentração das falhas a partir de 2023, aumento dos registros de falhas um crescimento dos problemas detectados.
+
+-   Podemos ver as localizações mais afetadas, sendo elasTampa traseira, portas e painel lateral,indicando pontos críticos de manutenção.
+
+-   Vemos os tipos de falhas mais comuns, como o desgaste prematuro e desalinhamento.
+
+------------------------------------------------------------------------
+
+## **4.2 Limitações e Possíveis Melhorias**
+
+-   A análise se baseou apenas nos dados internos, sem considerar fatores como alterações na linha de produção ou mudanças na matéria-prima, ou seja, não considerou possíveis falhas externas, como a falha humana.
+
+### **Sugestões para Melhorias Futuras**
+
+-   Aplicar modelos estatísticos para prever onde e quando falhas podem ocorrer
+-   Incorporar novas colunas, como tempo de uso das peças ou quilometragem, para entendermos melhor o impacto do desgaste ao longo do tempo.
